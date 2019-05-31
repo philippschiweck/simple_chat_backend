@@ -1,0 +1,24 @@
+{
+  "server": {
+    "port": "3000"
+  },
+  "ibm_tone": {
+    "key": "WNTg2n6kYHiObYrwsz2XREeDsUYZmxAdfdFgFcJt0zLs",
+    "url": "https://gateway-fra.watsonplatform.net/tone-analyzer/api"
+  },
+  "db_raspi": {
+    "address": "192.168.3.201",
+    "address_ipv6": "2a02:8070:87a6:be00:7537:f3f2:312b:f1ba",
+    "port": "3306",
+    "db": "cloudchat",
+    "user": "cloud",
+    "password": "ownDBCloud"
+  },
+  "db": {
+    "address": "157.230.124.251",
+    "port": "3306",
+    "user": "cloud",
+    "password": "ownDBCloud",
+    "db": "cloudchat"
+  }
+}
