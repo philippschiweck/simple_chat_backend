@@ -33,8 +33,6 @@ let translator = new LanguageTranslatorV3({
     },
 });
 
-app.use(express.static("./dist"));
-
 app.use(function (req, res, next) {
 
     // Website allowed
