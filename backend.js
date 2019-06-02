@@ -10,7 +10,9 @@ let bodyParser = require('body-parser')
 let ToneAnalyzerV3 = require('ibm-watson/tone-analyzer/v3');
 let LanguageTranslatorV3 = require('ibm-watson/language-translator/v3');
 let bcrypt = require('bcrypt');
-let helmet = require('helmet')
+let helmet = require('helmet');
+let secure = require('express-force-https');
+let hsts = require('hsts');
 
 let db = require('./db/db.js');
 let connectedUserMap = new Map();
@@ -43,6 +45,12 @@ app.use(helmet.contentSecurityPolicy({
         defaultSrc: ["'self'", 'simple-chat-n.eu-de.mybluemix.net'],
         styleSrc: ["'self'", 'maxcdn.bootstrapcdn.com']
     }
+}));
+
+app.use(secure);
+
+app.use(hsts({
+    maxAge: 31536000 // One year is recommended
 }));
 
 app.use(function (req, res, next) {
