@@ -8,6 +8,7 @@ let bodyParser = require('body-parser')
 let ToneAnalyzerV3 = require('ibm-watson/tone-analyzer/v3');
 let LanguageTranslatorV3 = require('ibm-watson/language-translator/v3');
 let bcrypt = require('bcrypt');
+let helmet = require('helmet')
 
 let db = require('./db/db.js');
 let connectedUserMap = new Map();
@@ -32,6 +33,15 @@ let translator = new LanguageTranslatorV3({
         'X-Watson-Learning-Opt-Out': true,
     },
 });
+
+app.use(helmet());
+
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+        defaultSrc: ["'self'", 'simple-chat-n.eu-de.mybluemix.net'],
+        styleSrc: ["'self'", 'maxcdn.bootstrapcdn.com']
+    }
+}));
 
 app.use(function (req, res, next) {
 
