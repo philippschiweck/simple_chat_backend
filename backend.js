@@ -1,7 +1,9 @@
 let express = require('express');
 let app = express();
 let http = require('http').Server(app);
-let io = require('socket.io')(http);
+let io = require('socket.io')(http, {
+    transports: 'websocket'
+});
 let config = require('./config.json');
 let formidable = require('formidable');
 let bodyParser = require('body-parser')
