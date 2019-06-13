@@ -367,7 +367,7 @@ function sendMessage(socket, userName, message, userColor, fileName, fileKey, ro
         let data = {};
         if(error) console.log(error);
         console.log("Clients in room " + roomId + ": " + clients[0]);
-        let room = roomMap.get(user.currentRoomId);
+        let room = roomMap.get(roomId);
         if(messageType === 'SERVER_MESSAGE'){
             data = {name: 'Server', date: '', message: message, color: '' ,type: messageType};
             socket.emit('message', data);
