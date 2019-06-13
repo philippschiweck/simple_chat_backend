@@ -40,10 +40,6 @@ redisPub.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
 
-
-/*let redisAdapter = require('socket.io-redis');
-io.adapter( redisAdapter({host: config.redis.address, port: config.redis.port, auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}}) );//6379
-*/
 let toneAnalyzer = new ToneAnalyzerV3({
     iam_apikey: config.ibm_tone.key,
     version: '2016-05-19',
@@ -138,7 +134,7 @@ http.listen(port, function(){
 //Redis
 redisSub.on('message', function(channel, message){
     let test = {name: 'Server', date: '', message: message, color: '' ,type: 'SERVER_MESSAGE'};
-    console.log(msg);
+    console.log(message);
     io.emit('message', test);
 });
 
