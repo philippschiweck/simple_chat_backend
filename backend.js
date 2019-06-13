@@ -141,7 +141,7 @@ redisSub.on('message', function(channel, JsonData){
     let data = JSON.parse(JsonData);
     if(channel == 'messages'){
         console.log("Data from new Server: " + data.message);
-        sendMessage(data.userName, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, 'SERVER_MESSAGE');
+        sendMessage(data.userName, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, data.messageType);
         //PROBLEM:
         // There is no socket from which to send the messages from!
     }
