@@ -128,6 +128,7 @@ http.listen(port, function(){
 
 io.on('connection', function(socket){
     //TEST
+    console.log("This server port: " + port);
     let test = {name: 'Server', date: '', message: 'A user has connected!', color: '' ,type: 'SERVER_MESSAGE'};
     socket.emit('message', test);
     //TEST
