@@ -22,15 +22,21 @@ let port = process.env.PORT || 3000;
 
 //Redis
 let redis = require('redis');
-let redisClient = redis.createClient(config.redis.port, config.redis.address,
+let redisPub = redis.createClient(config.redis.port, config.redis.address,
     {auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}});
-redisClient.on('connect', function() {
-    console.log('Redis client connected');
-    redisClient.subscribe('messages');
-    redisClient.publish('messages', "A new server has connected!");
+let redisSub = redis.createClient(config.redis.port, config.redis.address,
+    {auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}});
+redisPub.on('connect', function() {
+    console.log('Redis Pub client connected');
+    redisPub.publish('messages', "A new server has connected!");
 });
 
-redisClient.on('error', function (err) {
+redisSub.on('connect', function() {
+    console.log('Redis Sub client connected');
+    redisSub.subscribe('messages');
+});
+
+redisPub.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
 
@@ -130,7 +136,7 @@ http.listen(port, function(){
 });
 
 //Redis
-redisClient.on('message', function(channel, message){
+redisSub.on('message', function(channel, message){
     let test = {name: 'Server', date: '', message: message, color: '' ,type: 'SERVER_MESSAGE'};
     console.log(msg);
     io.emit('message', test);
