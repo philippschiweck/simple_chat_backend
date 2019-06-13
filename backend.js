@@ -29,7 +29,7 @@ let redisSub = redis.createClient(config.redis.port, config.redis.address,
 redisPub.on('connect', function() {
     console.log('Redis Pub client connected');
     let test = {name: 'Server', date: '', message: 'A new server instance has been started!', color: '' ,type: 'SERVER_MESSAGE'};
-    redisPub.publish('messages', test);
+    redisPub.publish('messages', JSON.stringify(test));
 });
 
 redisPub.on('error', function (err) {
