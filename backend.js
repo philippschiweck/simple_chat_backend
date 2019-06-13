@@ -139,10 +139,10 @@ http.listen(port, function(){
 //Redis
 redisSub.on('message', function(channel, JsonData){
     let data = JSON.parse(JsonData);
-    console.log("Got Redis Data: " + data);
+    console.log("Got Redis Data: " + JSONData);
     if(channel == 'messages'){
         console.log("Data from new Server: " + data.message);
-        sendMessage(data.userName, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, data.messageType);
+        sendMessage(data.userName, null, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, data.messageType);
         //PROBLEM:
         // There is no socket from which to send the messages from!
     }
@@ -161,7 +161,7 @@ io.on('connection', function(socket){
         sendUsers(connectedUserId);
 
         console.log(connectedUserId + ' connected!');
-        sendMessage(user.nickname, "Welcome to the Chat, " + user.nickname + "! Click on a Room on the left to start chatting!", user.color, '', '', '', 'SERVER_MESSAGE');
+        sendMessage(user.nickname, socket.id, "Welcome to the Chat, " + user.nickname + "! Click on a Room on the left to start chatting!", user.color, '', '', '', 'SERVER_MESSAGE');
         console.log(connectedUserId + ' is now nicknamed ' + user.nickname + '!');
 
         socket.broadcast.emit('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_JOINED'});
@@ -216,7 +216,7 @@ io.on('connection', function(socket){
                 socket.leave(currentRoom.id, function(){
                     currentRoom.users.splice(user.id);
                 });
-                sendMessage(user.nickname, 'User ' + user.nickname + ' has left the room!', user.color, '', '', currentRoom.id,  'ROOM_MESSAGE');
+                sendMessage(user.nickname, socket.id, 'User ' + user.nickname + ' has left the room!', user.color, '', '', currentRoom.id,  'ROOM_MESSAGE');
                 joinRoom(this, user, roomMap.get(roomId));
             }
         } else if(roomExists) {
@@ -230,13 +230,13 @@ io.on('connection', function(socket){
         if(data.type === 'media'){
             console.log('Media Message from ' + user.nickname + ' in room ' + user.currentRoomId  + ':' + data.message);
             console.log('File Name: ' + data.file.fileName);
-            sendMessage(user.nickname, data.message, user.color, data.file.fileName, data.file.fileKey, user.currentRoomId,  'MEDIA_MESSAGE');
+            sendMessage(user.nickname, socket.id, data.message, user.color, data.file.fileName, data.file.fileKey, user.currentRoomId,  'MEDIA_MESSAGE');
             //Redis send
             let redisData = {userName: user.nickname, message: data.message, userColor: user.color, fileName: data.file.fileName, fileKey: data.file.fileKey, messageType: 'MEDIA_MESSAGE'};
             redisPub.publish('messages', JSON.stringify(redisData));
         } else if(data.type === 'text') {
             console.log('Message from ' + user.nickname + ' in room ' + user.currentRoomId + ": " + data.message);
-            sendMessage(user.nickname, data.message, user.color, null, null, user.currentRoomId,  'CHAT_MESSAGE');
+            sendMessage(user.nickname, socket.id, data.message, user.color, null, null, user.currentRoomId,  'CHAT_MESSAGE');
             //Redis send
             let redisData = {userName: user.nickname, message: data.message, userColor: user.color, fileName: null, fileKey: null, messageType: 'CHAT_MESSAGE'};
             redisPub.publish('messages', JSON.stringify(redisData));
@@ -367,20 +367,21 @@ function joinRoom(socket, user, newRoom){
     console.log("User " + user.nickname + " has joined the room " + newRoom.name + '!');
     newRoom.users.push(user);
     user.currentRoomId = newRoom.id;
-    sendMessage(user.nickname, 'Welcome to the room \"' + newRoom.name + "\"!", user.color, '', '', newRoom.id, 'SERVER_MESSAGE');
-    sendMessage(user.nickname, 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, user.color, '', '', newRoom.id, 'ROOM_MESSAGE');
+    sendMessage(user.nickname, socket.id, 'Welcome to the room \"' + newRoom.name + "\"!", user.color, '', '', newRoom.id, 'SERVER_MESSAGE');
+    sendMessage(user.nickname, socket.id, 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, user.color, '', '', newRoom.id, 'ROOM_MESSAGE');
 }
 
-function sendMessage(userName, message, userColor, fileName, fileKey, roomId, messageType){
+function sendMessage(userName, userId, message, userColor, fileName, fileKey, roomId, messageType){
 
     io.of('/').in(roomId).clients(function(error, clients){
         let data = {};
         if(error) console.log(error);
         console.log("Clients in room " + roomId + ": " + clients[0]);
         let room = roomMap.get(roomId);
+        let user = connectedUserMap.get()
         if(messageType === 'SERVER_MESSAGE'){
             data = {name: 'Server', date: '', message: message, color: '' ,type: messageType};
-            io.to(userName).emit('message', data);
+            io.to(userId).emit('message', data);
         } else if(messageType === 'ROOM_MESSAGE'){
             data = {name: '', date: '', message: message, color: '' ,type: messageType};
             io.in(roomId).emit('message', data);
