@@ -125,6 +125,8 @@ http.listen(port, function(){
     roomMap.set('1234', {id: '1234', type:'public', name:'Global', users: [], messages: []});
     roomMap.set('5678', {id: '5678', type:'public', name:'Chatroom', users: [], messages: []});
     console.log("Listening on *:" + port);
+    redisClient.subscribe('messages');
+    redisClient.publish('messages', JSON.stringify({message: "A new server has connected!"}));
 });
 
 //Redis
@@ -136,9 +138,6 @@ redisClient.on('messages', function(chan, data){
 });
 
 io.on('connection', function(socket){
-
-    redisClient.subscribe('messages');
-    redisClient.publish('messages', JSON.stringify({message: "A new server has connected!"}));
 
     let connectedUserId = socket.id;
     connectedUserMap.set(socket.id, { status:'online'});
