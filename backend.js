@@ -232,13 +232,13 @@ io.on('connection', function(socket){
             console.log('File Name: ' + data.file.fileName);
             sendMessage(user.nickname, socket.id, data.message, user.color, data.file.fileName, data.file.fileKey, user.currentRoomId,  'MEDIA_MESSAGE');
             //Redis send
-            let redisData = {userName: user.nickname, message: data.message, userColor: user.color, fileName: data.file.fileName, fileKey: data.file.fileKey, messageType: 'MEDIA_MESSAGE'};
+            let redisData = {userName: user.nickname, message: data.message, userColor: user.color, fileName: data.file.fileName, fileKey: data.file.fileKey, roomId: user.currentRoomId, messageType: 'MEDIA_MESSAGE'};
             redisPub.publish('messages', JSON.stringify(redisData));
         } else if(data.type === 'text') {
             console.log('Message from ' + user.nickname + ' in room ' + user.currentRoomId + ": " + data.message);
             sendMessage(user.nickname, socket.id, data.message, user.color, null, null, user.currentRoomId,  'CHAT_MESSAGE');
             //Redis send
-            let redisData = {userName: user.nickname, message: data.message, userColor: user.color, fileName: null, fileKey: null, messageType: 'CHAT_MESSAGE'};
+            let redisData = {userName: user.nickname, message: data.message, userColor: user.color, fileName: null, fileKey: null, roomId: user.currentRoomId, messageType: 'CHAT_MESSAGE'};
             redisPub.publish('messages', JSON.stringify(redisData));
             const toneRequest = createToneRequest(data);
             toneAnalyzer.toneChat(
