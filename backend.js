@@ -26,6 +26,8 @@ let redisClient = redis.createClient(config.redis.port, config.redis.address,
     {auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}});
 redisClient.on('connect', function() {
     console.log('Redis client connected');
+    redisClient.subscribe('messages');
+    redisClient.publish('messages', JSON.stringify({message: "A new server has connected!"}));
 });
 
 redisClient.on('error', function (err) {
@@ -125,8 +127,6 @@ http.listen(port, function(){
     roomMap.set('1234', {id: '1234', type:'public', name:'Global', users: [], messages: []});
     roomMap.set('5678', {id: '5678', type:'public', name:'Chatroom', users: [], messages: []});
     console.log("Listening on *:" + port);
-    redisClient.subscribe('messages');
-    redisClient.publish('messages', JSON.stringify({message: "A new server has connected!"}));
 });
 
 //Redis
