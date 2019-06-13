@@ -20,5 +20,10 @@
     "user": "cloud",
     "password": "ownDBCloud",
     "db": "cloudchat"
+  },
+  "redis": {
+    "address": "cloudchat-n.redis.cache.windows.net",
+    "auth_pass": "R2IU16sHqIBUr1kF+y4BKaBDsjqmmX6QzfNC5EeqTPE=",
+    "port": "6380"
   }
 }

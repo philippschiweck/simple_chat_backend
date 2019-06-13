@@ -20,6 +20,19 @@ let roomMap = new Map();
 let fileMap = new Map();
 let port = process.env.PORT || 3000;
 
+//Redis
+let redis = require('redis');
+let client = redis.createClient(config.redis.port, config.redis.address,
+    {auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}});
+client.on('connect', function() {
+    console.log('Redis client connected');
+});
+
+client.on('error', function (err) {
+    console.log('Something went wrong ' + err);
+});
+
+
 let toneAnalyzer = new ToneAnalyzerV3({
     iam_apikey: config.ibm_tone.key,
     version: '2016-05-19',
