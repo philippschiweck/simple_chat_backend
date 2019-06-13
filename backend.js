@@ -124,14 +124,14 @@ http.listen(port, function(){
     roomMap.set('1234', {id: '1234', type:'public', name:'Global', users: [], messages: []});
     roomMap.set('5678', {id: '5678', type:'public', name:'Chatroom', users: [], messages: []});
     console.log("Listening on *:" + port);
+    //TEST
+    console.log("This server port: " + port);
+    let test = {name: 'Server', date: '', message: 'A new Server instance has started!', color: '' ,type: 'SERVER_MESSAGE'};
+    io.emit('message', test);
+    //TEST
 });
 
 io.on('connection', function(socket){
-    //TEST
-    console.log("This server port: " + port);
-    let test = {name: 'Server', date: '', message: 'A user has connected!', color: '' ,type: 'SERVER_MESSAGE'};
-    socket.emit('message', test);
-    //TEST
 
     let connectedUserId = socket.id;
     connectedUserMap.set(socket.id, { status:'online'});
