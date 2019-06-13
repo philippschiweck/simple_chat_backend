@@ -28,7 +28,7 @@ let redisSub = redis.createClient(config.redis.port, config.redis.address,
     {auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}});
 redisPub.on('connect', function() {
     console.log('Redis Pub client connected');
-    let test = {name: 'Server', date: '', message: message, color: '' ,type: 'SERVER_MESSAGE'};
+    let test = {name: 'Server', date: '', message: 'A new server instance has been started!', color: '' ,type: 'SERVER_MESSAGE'};
     redisPub.publish('messages', test);
 });
 
@@ -139,7 +139,7 @@ http.listen(port, function(){
 //Redis
 redisSub.on('message', function(channel, data){
     console.log(data.message);
-    sendMessage(data);
+    sendMessage(null, '', data.message, null, null, null, null, 'SERVER_MESSAGE');
     io.emit('message', data);
 });
 
