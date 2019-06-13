@@ -388,11 +388,21 @@ function sendMessage(userName, userId, message, userColor, fileName, fileKey, ro
         } else if(messageType === 'CHAT_MESSAGE'){
             let date = getDate();
             let data = {name: userName, date: date, message: message, color: userColor ,type: messageType};
-            io.in(roomId).emit('message', data);
+            if(userId){
+                let socket = io.sockets.connected[userId];
+                socket.to(roomId).emit('message', data);
+            } else {
+                io.in(roomId).emit('message', data);
+            }
         } else if(messageType === 'MEDIA_MESSAGE'){
             let date = getDate();
             let data = {name: userName, date: date, message: message, color: userColor, type: messageType, fileName: fileName, fileKey: fileKey};
-            io.in(roomId).emit('message', data);
+            if(userId){
+                let socket = io.sockets.connected[userId];
+                socket.to(roomId).emit('message', data);
+            } else {
+                io.in(roomId).emit('message', data);
+            }
         }
 
         //REDIS SEND
