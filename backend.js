@@ -139,7 +139,7 @@ http.listen(port, function(){
 //Redis
 redisSub.on('message', function(channel, JsonData){
     let data = JSON.parse(JsonData);
-    console.log("Got Redis Data: " + JSONData);
+    console.log("Got Redis Data: " + JsonData);
     if(channel == 'messages'){
         console.log("Data from new Server: " + data.message);
         sendMessage(data.userName, null, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, data.messageType);
