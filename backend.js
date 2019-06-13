@@ -370,7 +370,7 @@ function sendMessage(socket, userName, message, userColor, fileName, fileKey, ro
         let room = roomMap.get(roomId);
         if(messageType === 'SERVER_MESSAGE'){
             data = {name: 'Server', date: '', message: message, color: '' ,type: messageType};
-            socket.emit('message', data);
+            io.emit('message', data);
         } else if(messageType === 'ROOM_MESSAGE'){
             data = {name: '', date: '', message: message, color: '' ,type: messageType};
             socket.to(roomId).emit('message', data);
