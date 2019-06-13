@@ -138,7 +138,7 @@ http.listen(port, function(){
 
 //Redis
 redisSub.on('message', function(channel, data){
-    console.log(data.message);
+    console.log("Data from new Server: " + data);
     sendMessage(null, '', data.message, null, null, null, null, 'SERVER_MESSAGE');
     io.emit('message', data);
 });
