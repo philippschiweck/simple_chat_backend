@@ -21,17 +21,20 @@ let fileMap = new Map();
 let port = process.env.PORT || 3000;
 
 //Redis
-let redis = require('redis');
-let client = redis.createClient(config.redis.port, config.redis.address,
+/*let redis = require('redis');
+let redisClient = redis.createClient(config.redis.port, config.redis.address,
     {auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}});
-client.on('connect', function() {
+redisClient.on('connect', function() {
     console.log('Redis client connected');
 });
 
-client.on('error', function (err) {
+redisClient.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
+*/
 
+let redisAdapter = require('socket.io-redis');
+io.adapter( redisAdapter({host: config.redis.address, port: config.redis.port, auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}}) );//6379
 
 let toneAnalyzer = new ToneAnalyzerV3({
     iam_apikey: config.ibm_tone.key,
@@ -124,6 +127,11 @@ http.listen(port, function(){
 });
 
 io.on('connection', function(socket){
+    //TEST
+    let test = {name: 'Server', date: '', message: 'A user has connected!', color: '' ,type: 'SERVER_MESSAGE'};
+    socket.emit('message', test);
+    //TEST
+
     let connectedUserId = socket.id;
     connectedUserMap.set(socket.id, { status:'online'});
     let user = connectedUserMap.get(connectedUserId);
