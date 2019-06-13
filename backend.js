@@ -27,7 +27,7 @@ let redisClient = redis.createClient(config.redis.port, config.redis.address,
 redisClient.on('connect', function() {
     console.log('Redis client connected');
     redisClient.subscribe('messages');
-    redisClient.publish('messages', JSON.stringify({message: "A new server has connected!"}));
+    redisClient.publish('messages', "A new server has connected!");
 });
 
 redisClient.on('error', function (err) {
@@ -130,9 +130,8 @@ http.listen(port, function(){
 });
 
 //Redis
-redisClient.on('messages', function(chan, data){
-    let msg = data.message;
-    let test = {name: 'Server', date: '', message: msg, color: '' ,type: 'SERVER_MESSAGE'};
+redisClient.on('message', function(channel, message){
+    let test = {name: 'Server', date: '', message: message, color: '' ,type: 'SERVER_MESSAGE'};
     console.log(msg);
     io.emit('message', test);
 });
