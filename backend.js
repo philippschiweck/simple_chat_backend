@@ -139,6 +139,7 @@ http.listen(port, function(){
 //Redis
 redisSub.on('message', function(channel, JsonData){
     let data = JSON.parse(JsonData);
+    console.log("Got Redis Data: " + data);
     if(channel == 'messages'){
         console.log("Data from new Server: " + data.message);
         sendMessage(data.userName, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, data.messageType);
@@ -226,7 +227,6 @@ io.on('connection', function(socket){
     });
 
     socket.on('chat message', function(data){
-        console.log('CHAT MESSAGE');
         if(data.type === 'media'){
             console.log('Media Message from ' + user.nickname + ' in room ' + user.currentRoomId  + ':' + data.message);
             console.log('File Name: ' + data.file.fileName);
@@ -380,7 +380,7 @@ function sendMessage(userName, message, userColor, fileName, fileKey, roomId, me
         let room = roomMap.get(roomId);
         if(messageType === 'SERVER_MESSAGE'){
             data = {name: 'Server', date: '', message: message, color: '' ,type: messageType};
-            io.emit('message', data);
+            io.to(userName).emit('message', data);
         } else if(messageType === 'ROOM_MESSAGE'){
             data = {name: '', date: '', message: message, color: '' ,type: messageType};
             io.in(roomId).emit('message', data);
