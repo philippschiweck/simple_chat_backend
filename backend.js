@@ -21,7 +21,7 @@ let fileMap = new Map();
 let port = process.env.PORT || 3000;
 
 //Redis
-/*let redis = require('redis');
+let redis = require('redis');
 let redisClient = redis.createClient(config.redis.port, config.redis.address,
     {auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}});
 redisClient.on('connect', function() {
@@ -31,11 +31,11 @@ redisClient.on('connect', function() {
 redisClient.on('error', function (err) {
     console.log('Something went wrong ' + err);
 });
-*/
 
-let redisAdapter = require('socket.io-redis');
+
+/*let redisAdapter = require('socket.io-redis');
 io.adapter( redisAdapter({host: config.redis.address, port: config.redis.port, auth_pass: config.redis.auth_pass, tls: {servername: config.redis.address}}) );//6379
-
+*/
 let toneAnalyzer = new ToneAnalyzerV3({
     iam_apikey: config.ibm_tone.key,
     version: '2016-05-19',
@@ -54,7 +54,8 @@ let translator = new LanguageTranslatorV3({
     },
 });
 
-app.use(helmet());
+//app.use
+{app.use(helmet());
 
 app.use(helmet.contentSecurityPolicy({
     directives: {
@@ -90,7 +91,7 @@ app.use(function (req, res, next) {
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
-}));
+}));}
 
 app.post('/upload', function (req, res){
     var form = new formidable.IncomingForm();
@@ -124,14 +125,20 @@ http.listen(port, function(){
     roomMap.set('1234', {id: '1234', type:'public', name:'Global', users: [], messages: []});
     roomMap.set('5678', {id: '5678', type:'public', name:'Chatroom', users: [], messages: []});
     console.log("Listening on *:" + port);
-    //TEST
-    console.log("This server port: " + port);
-    let test = {name: 'Server', date: '', message: 'A new Server instance has started!', color: '' ,type: 'SERVER_MESSAGE'};
+});
+
+//Redis
+redisClient.on('messages', function(chan, data){
+    let msg = data.message;
+    let test = {name: 'Server', date: '', message: msg, color: '' ,type: 'SERVER_MESSAGE'};
+    console.log(msg);
     io.emit('message', test);
-    //TEST
 });
 
 io.on('connection', function(socket){
+
+    redisClient.subscribe('messages');
+    redisClient.publish('messages', JSON.stringify({message: "A new server has connected!"}));
 
     let connectedUserId = socket.id;
     connectedUserMap.set(socket.id, { status:'online'});
@@ -352,14 +359,15 @@ function joinRoom(socket, user, newRoom){
 function sendMessage(socket, messageType, roomId, user, message, file){
 
     io.of('/').in(roomId).clients(function(error, clients){
+        let data = {};
         if(error) console.log(error);
         console.log("Clients in room " + roomId + ": " + clients[0]);
         let room = roomMap.get(user.currentRoomId);
         if(messageType === 'SERVER_MESSAGE'){
-            let data = {name: 'Server', date: '', message: message, color: '' ,type: messageType};
+            data = {name: 'Server', date: '', message: message, color: '' ,type: messageType};
             socket.emit('message', data);
         } else if(messageType === 'ROOM_MESSAGE'){
-            let data = {name: '', date: '', message: message, color: '' ,type: messageType};
+            data = {name: '', date: '', message: message, color: '' ,type: messageType};
             socket.to(roomId).emit('message', data);
         } else if(messageType === 'CHAT_MESSAGE'){
             let date = getDate();
@@ -370,6 +378,8 @@ function sendMessage(socket, messageType, roomId, user, message, file){
             let data = {name: user.nickname, date: date, message: message, color: user.color, type: messageType, fileName: file.fileName, fileKey: file.fileKey};
             io.in(roomId).emit('message', data);
         }
+
+        //REDIS SEND
     });
 
 }
