@@ -236,12 +236,16 @@ io.on('connection', function(socket){
             //Redis send
             let redisData = {userName: user.nickname, userId: socket.id, message: data.message, userColor: user.color, fileName: data.file.fileName, fileKey: data.file.fileKey, roomId: user.currentRoomId, messageType: 'MEDIA_MESSAGE'};
             redisPub.publish('messages', JSON.stringify(redisData));
+
         } else if(data.type === 'text') {
             console.log('Message from ' + user.nickname + ' in room ' + user.currentRoomId + ": " + data.message);
-            sendMessage(user.nickname, socket.id, data.message, user.color, null, null, user.currentRoomId,  'CHAT_MESSAGE');
+            //sendMessage(user.nickname, null, data.message, user.color, null, null, user.currentRoomId,  'CHAT_MESSAGE');
+
             //Redis send
             let redisData = {userName: user.nickname, userId: socket.id, message: data.message, userColor: user.color, fileName: null, fileKey: null, roomId: user.currentRoomId, messageType: 'CHAT_MESSAGE'};
             redisPub.publish('messages', JSON.stringify(redisData));
+
+            //Tone
             const toneRequest = createToneRequest(data);
             toneAnalyzer.toneChat(
                 toneRequest,
@@ -410,9 +414,10 @@ function sendMessage(userName, userId, message, userColor, fileName, fileKey, ro
             let data = {name: userName, date: date, message: message, color: userColor ,type: messageType};
             let socket = io.sockets.connected[userId];
 
-            /*if(socket){ //If there is a socket with the userId, the user is on this server. The user will therefore send from own socket to the other users in the room
-                socket.to(roomId).emit('message', data);
-            } else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room */
+            //if(socket){ //If there is a socket with the userId, the user is on this server. The user will therefore send from own socket to the other users in the room
+            //    socket.to(roomId).emit('message', data);
+            //    io.to(socket.id).emit('message', data);
+            //} else { //If there is no socket with the userId, the user is NOT on this server and the message will be sent to everyone in the room
                 io.in(roomId).emit('message', data);
             //}
 
