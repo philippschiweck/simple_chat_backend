@@ -412,7 +412,7 @@ function sendMessage(userName, userId, message, userColor, fileName, fileKey, ro
 
             /*if(socket){ //If there is a socket with the userId, the user is on this server. The user will therefore send from own socket to the other users in the room
                 socket.to(roomId).emit('message', data);
-            */} else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room
+            } else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room */
                 io.in(roomId).emit('message', data);
             //}
 
