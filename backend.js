@@ -169,6 +169,7 @@ redisSub.on('message', function(channel, JsonData){
         } else if (data.newRoom.type === 'private') {
             for(user in data.newRoom.users){
                 let connected = Object.keys(io.sockets.connected);
+                console.log("Keys: " + connected);
                 if(connected.contains(user)){
                     io.to(user.id).emit('room added', data);
                 }
