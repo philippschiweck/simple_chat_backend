@@ -142,7 +142,7 @@ redisSub.on('message', function(channel, JsonData){
     console.log("Got Redis Data: " + JsonData);
     if(channel == 'messages'){
         console.log("Data from new Server: " + data.message);
-        sendMessage(data.userName, null, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, data.messageType);
+        sendMessage(data.userName, data.userId, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, data.messageType);
         //PROBLEM:
         // There is no socket from which to send the messages from!
     }
@@ -217,7 +217,7 @@ io.on('connection', function(socket){
                     currentRoom.users.splice(user.id);
                 });
                 sendMessage(user.nickname, socket.id, 'User ' + user.nickname + ' has left the room!', user.color, '', '', currentRoom.id,  'ROOM_MESSAGE');
-                let data = {userName: null, userId: null, message: 'User ' + user.nickname + ' has left the room!', color: null, fileName: null, fileKey: null, roomId: currentRoom.id, messageType: 'ROOM_MESSAGE'};
+                let data = {userName: null, userId: socket.id, message: 'User ' + user.nickname + ' has left the room!', color: null, fileName: null, fileKey: null, roomId: currentRoom.id, messageType: 'ROOM_MESSAGE'};
                 redisPub.publish('messages', JSON.stringify(data));
                 joinRoom(this, user, roomMap.get(roomId));
             }
@@ -234,13 +234,13 @@ io.on('connection', function(socket){
             console.log('File Name: ' + data.file.fileName);
             sendMessage(user.nickname, socket.id, data.message, user.color, data.file.fileName, data.file.fileKey, user.currentRoomId,  'MEDIA_MESSAGE');
             //Redis send
-            let redisData = {userName: user.nickname, message: data.message, userColor: user.color, fileName: data.file.fileName, fileKey: data.file.fileKey, roomId: user.currentRoomId, messageType: 'MEDIA_MESSAGE'};
+            let redisData = {userName: user.nickname, userId: socket.id, message: data.message, userColor: user.color, fileName: data.file.fileName, fileKey: data.file.fileKey, roomId: user.currentRoomId, messageType: 'MEDIA_MESSAGE'};
             redisPub.publish('messages', JSON.stringify(redisData));
         } else if(data.type === 'text') {
             console.log('Message from ' + user.nickname + ' in room ' + user.currentRoomId + ": " + data.message);
             sendMessage(user.nickname, socket.id, data.message, user.color, null, null, user.currentRoomId,  'CHAT_MESSAGE');
             //Redis send
-            let redisData = {userName: user.nickname, message: data.message, userColor: user.color, fileName: null, fileKey: null, roomId: user.currentRoomId, messageType: 'CHAT_MESSAGE'};
+            let redisData = {userName: user.nickname, userId: socket.id, message: data.message, userColor: user.color, fileName: null, fileKey: null, roomId: user.currentRoomId, messageType: 'CHAT_MESSAGE'};
             redisPub.publish('messages', JSON.stringify(redisData));
             const toneRequest = createToneRequest(data);
             toneAnalyzer.toneChat(
@@ -372,7 +372,7 @@ function joinRoom(socket, user, newRoom){
     user.currentRoomId = newRoom.id;
     sendMessage(user.nickname, socket.id, 'Welcome to the room \"' + newRoom.name + "\"!", user.color, '', '', newRoom.id, 'SERVER_MESSAGE');
     sendMessage(user.nickname, socket.id, 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, user.color, '', '', newRoom.id, 'ROOM_MESSAGE');
-    let data = {userName: user.nickname, userId: null, message: 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, color: user.color, fileName: null, fileKey: null, roomId: newRoom.id, messageType: 'ROOM_MESSAGE'};
+    let data = {userName: user.nickname, userId: socket.id, message: 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, color: user.color, fileName: null, fileKey: null, roomId: newRoom.id, messageType: 'ROOM_MESSAGE'};
     redisPub.publish('messages', JSON.stringify(data));
 }
 
@@ -384,32 +384,46 @@ function sendMessage(userName, userId, message, userColor, fileName, fileKey, ro
         console.log("Clients in room " + roomId + ": " + clients[0]);
         let room = roomMap.get(roomId);
         let user = connectedUserMap.get()
-        if(messageType === 'SERVER_MESSAGE'){ //Server Messages are always only messages from the server to ONE user (e.g. welcome message)
+
+        //Server Messages are always only messages from the server to ONE user (e.g. welcome message)
+        if(messageType === 'SERVER_MESSAGE'){
             data = {name: 'Server', date: '', message: message, color: '' ,type: messageType};
             io.to(userId).emit('message', data);
-        } else if(messageType === 'ROOM_MESSAGE'){ // Room Messages are messages from the server to a whole room (e.g. a new user joins a room -> announcement)
+
+        // Room Messages are messages from the server to a whole room (e.g. a new user joins a room -> announcement)
+        } else if(messageType === 'ROOM_MESSAGE'){
+
             data = {name: '', date: '', message: message, color: '' ,type: messageType};
             console.log("ROOM Message in " + roomId + ": " + message);
-            if(userId){ //If there is a userId, the user is on this server. The user will therefore send from own socket to the other users in the room
-                let socket = io.sockets.connected[userId];
+            let socket = io.sockets.connected[userId];
+
+            if(socket){ //If there is a userId, the user is on this server. The user will therefore send from own socket to the other users in the room
                 socket.to(roomId).emit('message', data);
             } else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room
                 io.in(roomId).emit('message', data);
             }
-        } else if(messageType === 'CHAT_MESSAGE'){ //Chat Messages are messages from a user to his whole room
+
+        //Chat Messages are messages from a user to his whole room
+        } else if(messageType === 'CHAT_MESSAGE'){
+
             let date = getDate();
             let data = {name: userName, date: date, message: message, color: userColor ,type: messageType};
-            if(userId){ //If there is a userId, the user is on this server. The user will therefore send from own socket to the other users in the room
-                let socket = io.sockets.connected[userId];
+            let socket = io.sockets.connected[userId];
+
+            if(socket){ //If there is a socket with the userId, the user is on this server. The user will therefore send from own socket to the other users in the room
                 socket.to(roomId).emit('message', data);
             } else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room
                 io.in(roomId).emit('message', data);
             }
+
+        //Media Messages are messages from a user to his whole room
         } else if(messageType === 'MEDIA_MESSAGE'){
+
             let date = getDate();
             let data = {name: userName, date: date, message: message, color: userColor, type: messageType, fileName: fileName, fileKey: fileKey};
-            if(userId){ //If there is a userId, the user is on this server. The user will therefore send from own socket to the other users in the room
-                let socket = io.sockets.connected[userId];
+            let socket = io.sockets.connected[userId];
+
+            if(socket){ //If there is a socket with the userId, the user is on this server. The user will therefore send from own socket to the other users in the room
                 socket.to(roomId).emit('message', data);
             } else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room
                 io.in(roomId).emit('message', data);
