@@ -5,4 +5,4 @@ applications:
   host: simple-chat-n-backend
   command: npm start
   build-pack: https://github.com/cloudfoundry/nodejs-buildpack
-  instances: 1
+  instances: 2

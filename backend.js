@@ -372,7 +372,7 @@ function joinRoom(socket, user, newRoom){
     user.currentRoomId = newRoom.id;
     sendMessage(user.nickname, socket.id, 'Welcome to the room \"' + newRoom.name + "\"!", user.color, '', '', newRoom.id, 'SERVER_MESSAGE');
     sendMessage(user.nickname, socket.id, 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, user.color, '', '', newRoom.id, 'ROOM_MESSAGE');
-    let data = {userName: user.nickname, userId: null, message: 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, color: user.color, fileName: null, fileKey: null, roomId: newRoom.id, MessageType: 'ROOM_MESSAGE'};
+    let data = {userName: user.nickname, userId: null, message: 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, color: user.color, fileName: null, fileKey: null, roomId: newRoom.id, messageType: 'ROOM_MESSAGE'};
     redisPub.publish('messages', JSON.stringify(data));
 }
 
