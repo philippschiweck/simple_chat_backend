@@ -140,11 +140,18 @@ http.listen(port, function(){
 redisSub.on('message', function(channel, JsonData){
     let data = JSON.parse(JsonData);
     console.log("Got Redis Data: " + JsonData);
-    if(channel == 'messages'){
-        console.log("Data from new Server: " + data.message);
+    if(channel === 'messages'){
+        console.log("Data from Redis: " + data.message);
         sendMessage(data.userName, data.userId, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, data.messageType);
         //PROBLEM:
         // There is no socket from which to send the messages from!
+    } else if(channel === 'userlist update'){
+        console.log("Data from Redis: " + data.message);
+        let socket = io.sockets.connected[data.user.id];
+        if(socket){
+            socket.broadcast.emit('userlist update', data);
+        }
+
     }
 });
 
@@ -164,7 +171,9 @@ io.on('connection', function(socket){
         sendMessage(user.nickname, socket.id, "Welcome to the Chat, " + user.nickname + "! Click on a Room on the left to start chatting!", user.color, '', '', '', 'SERVER_MESSAGE');
         console.log(connectedUserId + ' is now nicknamed ' + user.nickname + '!');
 
-        socket.broadcast.emit('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_JOINED'});
+        //Redis
+        redisPub.publish('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_JOINED'});
+        //socket.broadcast.emit('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_JOINED'});
     });
 
     socket.on('check username', function(data){
