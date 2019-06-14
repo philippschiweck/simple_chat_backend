@@ -150,6 +150,8 @@ redisSub.on('message', function(channel, JsonData){
         let socket = io.sockets.connected[data.user.id];
         if(socket){
             socket.broadcast.emit('userlist update', data);
+        } else {
+            io.emit('userlist update', data);
         }
 
     }
