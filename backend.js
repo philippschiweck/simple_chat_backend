@@ -374,8 +374,8 @@ function createRoom(data, user, userId){
 function sendUsers(connectedUserId){
     let userList = [];
     connectedUserMap.forEach((connectedUser, key) => {
-        if(key !== connectedUserId && connectedUser.nickname !== ''){
-            let userInfo = {"id": key, "name": connectedUser.nickname};
+        if(key !== connectedUserId && connectedUser.name !== ''){
+            let userInfo = {"id": key, "name": connectedUser.name};
             userList.push(userInfo);
         }
     });
