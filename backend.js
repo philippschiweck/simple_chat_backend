@@ -40,6 +40,7 @@ redisSub.on('connect', function() {
     console.log('Redis Sub client connected');
     redisSub.subscribe('messages');
     redisSub.subscribe('userlist update');
+    redisSub.subscribe('room added');
 });
 
 redisSub.on('error', function (err) {
@@ -349,7 +350,6 @@ function createToneRequest (request) {
 
 function createRoom(data, user, userId){
     let newId = generateID(roomMap);
-    //For some reason, data.name can not be accessed below while creating the new room
     let name = data.name;
     let type = data.type;
     let users = data.users;
@@ -360,8 +360,7 @@ function createRoom(data, user, userId){
             id: newId,
             name: name,
             type: type,
-            users: [],
-            messages: []
+            users: []
         };
         let data = {id: newRoom.id, name: newRoom.name, type: 'public'};
         let roomHeader = {dataType: 'ROOM_ADDED', newRoom: data};
@@ -374,13 +373,13 @@ function createRoom(data, user, userId){
             id: newId,
             name: name + user.nickname,
             type: type,
-            users: users,
-            messages: []
+            users: users
         };
         roomMap.set(newId, newRoom);
         let data = {id: newRoom.id, users: users, name: newRoom.name, type: 'private'};
         let roomHeader = {dataType: 'ROOM_ADDED', newRoom: data};
         redisPub.publish('room added', JSON.stringify(roomHeader));
+        console.log(roomHeader);
         /*for(let user of users){
             console.log('Nickname: ' + user.name);
             //console.log(user);
@@ -402,6 +401,7 @@ function sendUsers(connectedUserId){
 }
 
 function joinRoom(socket, user, newRoom){
+    //Redis
     let data = {userName: user.nickname, userId: socket.id, message: 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, color: user.color, fileName: null, fileKey: null, roomId: newRoom.id, messageType: 'ROOM_MESSAGE'};
     redisPub.publish('messages', JSON.stringify(data));
 
