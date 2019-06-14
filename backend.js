@@ -410,11 +410,11 @@ function sendMessage(userName, userId, message, userColor, fileName, fileKey, ro
             let data = {name: userName, date: date, message: message, color: userColor ,type: messageType};
             let socket = io.sockets.connected[userId];
 
-            if(socket){ //If there is a socket with the userId, the user is on this server. The user will therefore send from own socket to the other users in the room
+            /*if(socket){ //If there is a socket with the userId, the user is on this server. The user will therefore send from own socket to the other users in the room
                 socket.to(roomId).emit('message', data);
-            } else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room
+            */} else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room
                 io.in(roomId).emit('message', data);
-            }
+            //}
 
         //Media Messages are messages from a user to his whole room
         } else if(messageType === 'MEDIA_MESSAGE'){
