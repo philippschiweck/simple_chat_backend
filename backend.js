@@ -277,7 +277,7 @@ io.on('connection', function(socket){
 
     socket.on('disconnect', function(data){
         connectedUserMap.delete(connectedUserId);
-        redisPub.publish('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_LEFT'});
+        redisPub.publish('userlist update', JSON.stringify({user: {id: connectedUserId, name: user.nickname}, type: 'USER_LEFT'}));
         //socket.broadcast.emit('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_LEFT'});
     });
 
