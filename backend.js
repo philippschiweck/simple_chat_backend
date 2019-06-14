@@ -172,7 +172,7 @@ io.on('connection', function(socket){
         console.log(connectedUserId + ' is now nicknamed ' + user.nickname + '!');
 
         //Redis
-        redisPub.publish('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_JOINED'});
+        redisPub.publish('userlist update', JSON.stringify({user: {id: connectedUserId, name: user.nickname}, type: 'USER_JOINED'}));
         //socket.broadcast.emit('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_JOINED'});
     });
 
