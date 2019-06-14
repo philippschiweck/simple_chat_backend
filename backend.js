@@ -163,17 +163,16 @@ redisSub.on('message', function(channel, JsonData){
     } else if (channel === 'room added') {
         console.log("Room data from Redis: " + data);
         roomMap.set(data.newRoom.id, data.newRoom);
-        if(data.newRoom.type == 'public'){
+        if(data.newRoom.type === 'public'){
             io.emit('room added', data);
 
-        } else if (data.newRoom.type == 'private') {
+        } else if (data.newRoom.type === 'private') {
             for(user in data.newRoom.users){
-                let connected = Object.keys(io.sockets.sockets);
+                let connected = Object.keys(io.sockets.connected);
                 if(connected.contains(user)){
                     io.to(user.id).emit('room added', data);
                 }
             }
-
         }
     }
 });
