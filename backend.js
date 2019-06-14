@@ -267,7 +267,6 @@ io.on('connection', function(socket){
                         console.log(err);
                     } else {
                         evaluateMessageTone(user, tone, socket);
-                        //console.log(JSON.stringify(tone, null, 2));
                     }
                 }
             );
@@ -278,7 +277,8 @@ io.on('connection', function(socket){
 
     socket.on('disconnect', function(data){
         connectedUserMap.delete(connectedUserId);
-        socket.broadcast.emit('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_LEFT'});
+        redisPub.publish('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_LEFT'});
+        //socket.broadcast.emit('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_LEFT'});
     });
 
     socket.on('get users', function(data){
