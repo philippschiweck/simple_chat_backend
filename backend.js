@@ -392,6 +392,7 @@ function sendMessage(userName, userId, message, userColor, fileName, fileKey, ro
                 let socket = io.sockets.connected[userId];
                 socket.to(roomId).emit('message', data);
             } else {
+                console.log("Sending message to room " + roomId + ": " + message);
                 io.in(roomId).emit('message', data);
             }
         } else if(messageType === 'CHAT_MESSAGE'){
