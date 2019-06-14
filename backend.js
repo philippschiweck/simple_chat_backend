@@ -155,6 +155,10 @@ redisSub.on('message', function(channel, JsonData){
         } else {
             io.emit('userlist update', data);
         }
+
+        if(data.type === 'USER_LEFT'){
+            connectedUserMap.delete(data.user.id);
+        }
     }
 });
 
@@ -276,7 +280,6 @@ io.on('connection', function(socket){
     });
 
     socket.on('disconnect', function(data){
-        connectedUserMap.delete(connectedUserId);
         redisPub.publish('userlist update', JSON.stringify({user: {id: connectedUserId, name: user.nickname}, type: 'USER_LEFT'}));
         //socket.broadcast.emit('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_LEFT'});
     });
