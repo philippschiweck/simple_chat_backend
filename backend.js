@@ -162,6 +162,7 @@ redisSub.on('message', function(channel, JsonData){
         }
     } else if (channel === 'room added') {
         console.log("Room data from Redis: " + data);
+        roomMap.set(data.newRoom.id, data.newRoom);
         if(data.newRoom.type == 'public'){
             io.emit('room added', data);
 
@@ -364,7 +365,7 @@ function createRoom(data, user, userId){
         };
         let data = {id: newRoom.id, name: newRoom.name, type: 'public'};
         let roomHeader = {dataType: 'ROOM_ADDED', newRoom: data};
-        roomMap.set(newId, newRoom);
+        //roomMap.set(newId, newRoom);
         redisPub.publish('room added', JSON.stringify(roomHeader));
         //io.emit('room added', roomHeader);
 
@@ -375,7 +376,7 @@ function createRoom(data, user, userId){
             type: type,
             users: users
         };
-        roomMap.set(newId, newRoom);
+        //roomMap.set(newId, newRoom);
         let data = {id: newRoom.id, users: users, name: newRoom.name, type: 'private'};
         let roomHeader = {dataType: 'ROOM_ADDED', newRoom: data};
         redisPub.publish('room added', JSON.stringify(roomHeader));
@@ -472,7 +473,7 @@ function sendRooms(socket_id){
             roomData.push(data);
         } else if(room.type === 'private'){
             if(room.users.find(function(v){return v['id'] === socket_id})){
-                let data = {id: key, name: room.name, type: 'public'};
+                let data = {id: key, name: room.name, type: 'private'};
                 roomData.push(data);
             }
         }
