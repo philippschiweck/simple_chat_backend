@@ -39,6 +39,7 @@ redisPub.on('error', function (err) {
 redisSub.on('connect', function() {
     console.log('Redis Sub client connected');
     redisSub.subscribe('messages');
+    redisSub.subscribe('userlist update');
 });
 
 redisSub.on('error', function (err) {
@@ -153,7 +154,6 @@ redisSub.on('message', function(channel, JsonData){
         } else {
             io.emit('userlist update', data);
         }
-
     }
 });
 
@@ -174,6 +174,7 @@ io.on('connection', function(socket){
         console.log(connectedUserId + ' is now nicknamed ' + user.nickname + '!');
 
         //Redis
+
         redisPub.publish('userlist update', JSON.stringify({user: {id: connectedUserId, name: user.nickname}, type: 'USER_JOINED'}));
         //socket.broadcast.emit('userlist update', {user: {id: connectedUserId, name: user.nickname}, type: 'USER_JOINED'});
     });
