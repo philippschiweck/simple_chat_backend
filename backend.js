@@ -407,7 +407,7 @@ function joinRoom(socket, user, newRoom){
     redisPub.publish('messages', JSON.stringify(data));
 
     console.log("User " + user.nickname + " has joined the room " + newRoom.name + '!');
-    newRoom.users.push(user);
+    //newRoom.users.push(user);
     user.currentRoomId = newRoom.id;
     sendMessage(user.nickname, socket.id, 'Welcome to the room \"' + newRoom.name + "\"!", user.color, '', '', newRoom.id, 'SERVER_MESSAGE');
     //sendMessage(user.nickname, socket.id, 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, user.color, '', '', newRoom.id, 'ROOM_MESSAGE');
