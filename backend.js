@@ -217,6 +217,8 @@ io.on('connection', function(socket){
                     currentRoom.users.splice(user.id);
                 });
                 sendMessage(user.nickname, socket.id, 'User ' + user.nickname + ' has left the room!', user.color, '', '', currentRoom.id,  'ROOM_MESSAGE');
+                let data = {userName: user.nickname, userId: socket.id, message: 'User ' + user.nickname + ' has left the room!', color: user.color, fileName: null, fileKey: null, roomId: currentRoom.id, messageType: 'ROOM_MESSAGE'};
+                redisPub.publish('messages', JSON.stringify(data));
                 joinRoom(this, user, roomMap.get(roomId));
             }
         } else if(roomExists) {
@@ -369,6 +371,8 @@ function joinRoom(socket, user, newRoom){
     user.currentRoomId = newRoom.id;
     sendMessage(user.nickname, socket.id, 'Welcome to the room \"' + newRoom.name + "\"!", user.color, '', '', newRoom.id, 'SERVER_MESSAGE');
     sendMessage(user.nickname, socket.id, 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, user.color, '', '', newRoom.id, 'ROOM_MESSAGE');
+    let data = {userName: user.nickname, userId: socket.id, message: 'User ' + user.nickname + ' has joined the room: ' + newRoom.name, color: user.color, fileName: null, fileKey: null, roomId: newRoom.id, MessageType: 'ROOM_MESSAGE'};
+    redisPub.publish('messages', JSON.stringify(data));
 }
 
 function sendMessage(userName, userId, message, userColor, fileName, fileKey, roomId, messageType){
@@ -384,7 +388,12 @@ function sendMessage(userName, userId, message, userColor, fileName, fileKey, ro
             io.to(userId).emit('message', data);
         } else if(messageType === 'ROOM_MESSAGE'){
             data = {name: '', date: '', message: message, color: '' ,type: messageType};
-            io.in(roomId).emit('message', data);
+            if(userId){
+                let socket = io.sockets.connected[userId];
+                socket.to(roomId).emit('message', data);
+            } else {
+                io.in(roomId).emit('message', data);
+            }
         } else if(messageType === 'CHAT_MESSAGE'){
             let date = getDate();
             let data = {name: userName, date: date, message: message, color: userColor ,type: messageType};
