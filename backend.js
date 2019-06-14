@@ -140,14 +140,14 @@ http.listen(port, function(){
 //Redis
 redisSub.on('message', function(channel, JsonData){
     let data = JSON.parse(JsonData);
-    console.log("Got Redis Data: " + JsonData);
+    console.log("Message data from Redis: " + JsonData);
     if(channel === 'messages'){
         console.log("Data from Redis: " + data.message);
         sendMessage(data.userName, data.userId, data.message, data.userColor, data.fileName, data.fileKey, data.roomId, data.messageType);
         //PROBLEM:
         // There is no socket from which to send the messages from!
     } else if(channel === 'userlist update'){
-        console.log("Data from Redis: " + data.message);
+        console.log("Userlist data from Redis: " + data.message);
         connectedUserMap.set(data.user.id, { name: data.user.name});
         let socket = io.sockets.connected[data.user.id];
         if(socket){
@@ -158,6 +158,20 @@ redisSub.on('message', function(channel, JsonData){
 
         if(data.type === 'USER_LEFT'){
             connectedUserMap.delete(data.user.id);
+        }
+    } else if (channel === 'room added') {
+        console.log("Room data from Redis: " + data);
+        if(data.newRoom.type == 'public'){
+            io.emit('room added', data);
+
+        } else if (data.newRoom.type == 'private') {
+            for(user in data.newRoom.users){
+                let connected = Object.keys(io.sockets.sockets);
+                if(connected.contains(user)){
+                    io.to(user.id).emit('room added', data);
+                }
+            }
+
         }
     }
 });
@@ -352,7 +366,8 @@ function createRoom(data, user, userId){
         let data = {id: newRoom.id, name: newRoom.name, type: 'public'};
         let roomHeader = {dataType: 'ROOM_ADDED', newRoom: data};
         roomMap.set(newId, newRoom);
-        io.emit('room added', roomHeader);
+        redisPub.publish('room added', JSON.stringify(roomHeader));
+        //io.emit('room added', roomHeader);
 
     } else if(type === 'private'){
         let newRoom = {
@@ -363,14 +378,15 @@ function createRoom(data, user, userId){
             messages: []
         };
         roomMap.set(newId, newRoom);
-        let data = {id: newRoom.id, name: newRoom.name, type: 'private'};
+        let data = {id: newRoom.id, users: users, name: newRoom.name, type: 'private'};
         let roomHeader = {dataType: 'ROOM_ADDED', newRoom: data};
-        for(let user of users){
+        redisPub.publish('room added', JSON.stringify(roomHeader));
+        /*for(let user of users){
             console.log('Nickname: ' + user.name);
             //console.log(user);
             io.to(user.id).emit('room added', roomHeader);
             //TODO Redis
-        }
+        }*/
     }
 }
 
