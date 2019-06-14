@@ -217,7 +217,7 @@ io.on('connection', function(socket){
                     currentRoom.users.splice(user.id);
                 });
                 sendMessage(user.nickname, socket.id, 'User ' + user.nickname + ' has left the room!', user.color, '', '', currentRoom.id,  'ROOM_MESSAGE');
-                let data = {userName: user.nickname, userId: null, message: 'User ' + user.nickname + ' has left the room!', color: user.color, fileName: null, fileKey: null, roomId: currentRoom.id, messageType: 'ROOM_MESSAGE'};
+                let data = {userName: null, userId: null, message: 'User ' + user.nickname + ' has left the room!', color: null, fileName: null, fileKey: null, roomId: currentRoom.id, messageType: 'ROOM_MESSAGE'};
                 redisPub.publish('messages', JSON.stringify(data));
                 joinRoom(this, user, roomMap.get(roomId));
             }
@@ -349,6 +349,7 @@ function createRoom(data, user, userId){
             console.log('Nickname: ' + user.name);
             //console.log(user);
             io.to(user.id).emit('room added', roomHeader);
+            //TODO Redis
         }
     }
 }
@@ -383,34 +384,34 @@ function sendMessage(userName, userId, message, userColor, fileName, fileKey, ro
         console.log("Clients in room " + roomId + ": " + clients[0]);
         let room = roomMap.get(roomId);
         let user = connectedUserMap.get()
-        if(messageType === 'SERVER_MESSAGE'){
+        if(messageType === 'SERVER_MESSAGE'){ //Server Messages are always only messages from the server to ONE user (e.g. welcome message)
             data = {name: 'Server', date: '', message: message, color: '' ,type: messageType};
             io.to(userId).emit('message', data);
-        } else if(messageType === 'ROOM_MESSAGE'){
+        } else if(messageType === 'ROOM_MESSAGE'){ // Room Messages are messages from the server to a whole room (e.g. a new user joins a room -> announcement)
             data = {name: '', date: '', message: message, color: '' ,type: messageType};
-            if(userId){
+            console.log("ROOM Message in " + roomId + ": " + message);
+            if(userId){ //If there is a userId, the user is on this server. The user will therefore send from own socket to the other users in the room
                 let socket = io.sockets.connected[userId];
                 socket.to(roomId).emit('message', data);
-            } else {
-                console.log("Sending message to room " + roomId + ": " + message);
+            } else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room
                 io.in(roomId).emit('message', data);
             }
-        } else if(messageType === 'CHAT_MESSAGE'){
+        } else if(messageType === 'CHAT_MESSAGE'){ //Chat Messages are messages from a user to his whole room
             let date = getDate();
             let data = {name: userName, date: date, message: message, color: userColor ,type: messageType};
-            if(userId){
+            if(userId){ //If there is a userId, the user is on this server. The user will therefore send from own socket to the other users in the room
                 let socket = io.sockets.connected[userId];
                 socket.to(roomId).emit('message', data);
-            } else {
+            } else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room
                 io.in(roomId).emit('message', data);
             }
         } else if(messageType === 'MEDIA_MESSAGE'){
             let date = getDate();
             let data = {name: userName, date: date, message: message, color: userColor, type: messageType, fileName: fileName, fileKey: fileKey};
-            if(userId){
+            if(userId){ //If there is a userId, the user is on this server. The user will therefore send from own socket to the other users in the room
                 let socket = io.sockets.connected[userId];
                 socket.to(roomId).emit('message', data);
-            } else {
+            } else { //If there is no userId, the user is NOT on this server and the message will be sent to everyone in the room
                 io.in(roomId).emit('message', data);
             }
         }
