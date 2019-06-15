@@ -169,7 +169,7 @@ redisSub.on('message', function(channel, JsonData){
         } else if (data.newRoom.type === 'private') {
             console.log("NEW PRIVATE ROOM CREATED!");
             for(user in data.newRoom.users){
-                console.log("Users: " + data.newRoom.users[0].id);
+                console.log("Users: " + user.id);
                 for(socket in io.sockets.connected){
                     if(socket.id == user.id) {
                         io.to(user.id).emit('room added', data);
