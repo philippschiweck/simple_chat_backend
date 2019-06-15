@@ -473,9 +473,12 @@ function sendRooms(socket_id){
             let data = {id: key, name: room.name, type: 'public'};
             roomData.push(data);
         } else if(room.type === 'private'){
-            if(room.users.find(function(v){return v['id'] === socket_id})){
-                let data = {id: key, name: room.name, type: 'private'};
-                roomData.push(data);
+            for(let user in room.users){
+                if(user.id === socket_id){
+                    let data = {id: key, name: room.name, type: 'private'};
+                    roomData.push(data);
+                    break;
+                }
             }
         }
     });
