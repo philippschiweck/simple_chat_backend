@@ -170,11 +170,10 @@ redisSub.on('message', function(channel, JsonData){
             console.log("NEW PRIVATE ROOM CREATED!");
             for(let member of data.newRoom.users){
                 console.log("Users: " + member.id);
-                io.sockets.clients().forEach(function (socket) {
-                    if(socket.id == member.id) {
-                        io.to(member.id).emit('room added', data);
-                    }
-                });
+
+                if(io.sockets.connected[member.id]) {
+                    io.to(member.id).emit('room added', data);
+                }
             }
         }
     }
