@@ -20,7 +20,7 @@
     "ibm-watson": "^4.2.0",
     "mysql": "^2.17.1",
     "redis": "^2.8.0",
-    "socket.io": "^2.2.0",
+    "socket.io": "^2.4.0",
     "socket.io-redis": "^5.2.0"
   }
 }
